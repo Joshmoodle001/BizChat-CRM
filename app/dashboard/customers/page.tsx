@@ -2,30 +2,10 @@ import Link from "next/link";
 import { requireRole } from "@/lib/auth/require-role";
 import { getCustomers } from "@/lib/customers/queries";
 import { SearchInput } from "@/components/ui/search-input";
+import { ClientFilters } from "@/components/ui/client-filters";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
-
-function StatusFilter() {
-  return (
-    <select
-      id="status-filter"
-      defaultValue=""
-      className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-      onChange={(e) => {
-        const url = new URL(window.location.href);
-        if (e.target.value) url.searchParams.set("status", e.target.value);
-        else url.searchParams.delete("status");
-        window.location.href = url.toString();
-      }}
-    >
-      <option value="">All statuses</option>
-      <option value="active">Active</option>
-      <option value="inactive">Inactive</option>
-      <option value="archived">Archived</option>
-    </select>
-  );
-}
 
 export default async function CustomersPage({
   searchParams,
@@ -68,7 +48,7 @@ export default async function CustomersPage({
         <div className="relative flex-1">
           <SearchInput placeholder="Search by name, phone, or email..." />
         </div>
-        <StatusFilter />
+        <ClientFilters statusOptions={["active", "inactive", "archived"]} />
       </div>
 
       {/* Content */}

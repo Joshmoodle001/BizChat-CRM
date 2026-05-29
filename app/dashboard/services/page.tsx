@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireRole } from "@/lib/auth/require-role";
 import { getServices } from "@/lib/services/queries";
 import { SearchInput } from "@/components/ui/search-input";
+import { ClientFilters } from "@/components/ui/client-filters";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
@@ -44,22 +45,11 @@ export default async function ServicesPage({
         <div className="relative flex-1">
           <SearchInput placeholder="Search by name, description, or category..." />
         </div>
-        <select
-          defaultValue={params.status ?? ""}
-          className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          onChange={(e) => {
-            const url = new URL(window.location.href);
-            if (e.target.value) url.searchParams.set("status", e.target.value);
-            else url.searchParams.delete("status");
-            url.searchParams.delete("category");
-            if (e.target.value) url.searchParams.set("status", e.target.value);
-            window.location.href = url.toString();
-          }}
-        >
-          <option value="">All statuses</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
+        <ClientFilters
+          statusOptions={["active", "inactive"]}
+          showCategory
+          categoryOptions={["Hair", "Beauty", "Cleaning", "Repair", "Tutoring", "Consulting", "Other"]}
+        />
       </div>
 
       {error ? (

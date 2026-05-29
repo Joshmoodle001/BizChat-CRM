@@ -2,6 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+function isRedirectError(e: unknown): boolean {
+  return (
+    e instanceof Error &&
+    "digest" in e &&
+    typeof (e as { digest: string }).digest === "string" &&
+    (e as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+  );
+}
 import { getCurrentProfile } from "@/lib/auth/get-current-profile";
 import { validateService } from "@/lib/validation/service";
 import {
@@ -44,7 +52,8 @@ export async function createServiceAction(formData: FormData) {
     revalidatePath("/dashboard/services");
     revalidatePath("/dashboard");
     redirect(`/dashboard/services/${data.id}`);
-  } catch {
+  } catch (e) {
+    if (isRedirectError(e)) throw e;
     return { error: "Failed to create service. Please try again." };
   }
 }
@@ -77,7 +86,8 @@ export async function updateServiceAction(id: string, formData: FormData) {
     revalidatePath(`/dashboard/services/${id}`);
     revalidatePath("/dashboard");
     redirect(`/dashboard/services/${id}`);
-  } catch {
+  } catch (e) {
+    if (isRedirectError(e)) throw e;
     return { error: "Failed to update service. Please try again." };
   }
 }
@@ -90,7 +100,8 @@ export async function deactivateServiceAction(id: string) {
     revalidatePath("/dashboard/services");
     revalidatePath(`/dashboard/services/${id}`);
     revalidatePath("/dashboard");
-  } catch {
+  } catch (e) {
+    if (isRedirectError(e)) throw e;
     throw new Error("Failed to deactivate service.");
   }
 }

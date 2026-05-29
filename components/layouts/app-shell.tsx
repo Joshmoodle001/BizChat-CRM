@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { cn } from "@/lib/utils";
+
+const ROLE_HOME: Record<string, string> = {
+  business_owner: "/dashboard",
+  staff: "/staff",
+  super_admin: "/super-admin",
+};
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -21,6 +27,7 @@ export function AppShell({
   sidebar,
 }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const homeLink = ROLE_HOME[role] ?? "/dashboard";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -40,7 +47,7 @@ export function AppShell({
         )}
       >
         <div className="flex h-16 items-center border-b border-gray-200 px-4">
-          <Link href="/" className="text-xl font-bold text-brand-600">
+          <Link href={homeLink} className="text-xl font-bold text-brand-600">
             BizChat CRM
           </Link>
         </div>

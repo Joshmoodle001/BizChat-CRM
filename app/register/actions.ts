@@ -1,7 +1,6 @@
 "use server";
 
 import { createServiceClient } from "@/lib/supabase/server";
-import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { seedDefaultTemplates } from "@/lib/auth/seed-templates";
 
@@ -25,10 +24,8 @@ export async function registerBusiness(formData: RegisterFormData) {
     return { error: "Password must be at least 8 characters." };
   }
 
-  // Use service role client to create user + business + profile atomically
   const serviceClient = await createServiceClient();
 
-  // 1. Create auth user
   const { data: authData, error: authError } =
     await serviceClient.auth.admin.createUser({
       email,
@@ -46,7 +43,6 @@ export async function registerBusiness(formData: RegisterFormData) {
 
   const userId = authData.user.id;
 
-  // 2. Create business
   const { data: business, error: businessError } = await serviceClient
     .from("businesses")
     .insert({
@@ -62,12 +58,10 @@ export async function registerBusiness(formData: RegisterFormData) {
     .single();
 
   if (businessError) {
-    // Rollback: delete the auth user
     await serviceClient.auth.admin.deleteUser(userId);
     return { error: "Failed to create business. Please try again." };
   }
 
-  // 3. Create profile
   const { error: profileError } = await serviceClient.from("profiles").insert({
     auth_user_id: userId,
     business_id: business.id,
@@ -79,24 +73,24 @@ export async function registerBusiness(formData: RegisterFormData) {
   });
 
   if (profileError) {
-    // Rollback: delete auth user and business
-    await serviceClient.from("businesses").delete().eq("id", business.id);
-    await serviceClient.auth.admin.deleteUser(userId);
+    try { await serviceClient.from("businesses").delete().eq("id", business.id); } catch {}
+    try { await serviceClient.auth.admin.deleteUser(userId); } catch {}
     return { error: "Failed to create profile. Please try again." };
   }
 
-  // 4. Audit log
-  await serviceClient.from("audit_logs").insert({
-    business_id: business.id,
-    action: "business_created",
-    entity_type: "business",
-    entity_id: business.id,
-    metadata: { industry, email },
-  });
+  try {
+    await serviceClient.from("audit_logs").insert({
+      business_id: business.id,
+      action: "business_created",
+      entity_type: "business",
+      entity_id: business.id,
+      metadata: { industry, email },
+    });
+  } catch {}
 
-  // 5. Seed default message templates
-  await seedDefaultTemplates(business.id);
+  try {
+    await seedDefaultTemplates(business.id);
+  } catch {}
 
-  // 6. Redirect to onboarding
   redirect("/onboarding");
 }
