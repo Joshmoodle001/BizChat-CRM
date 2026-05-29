@@ -5,6 +5,19 @@
 -- =====================================================
 
 -- =====================================================
+-- CLEANUP: drop existing tables from prior setup
+-- =====================================================
+DROP TABLE IF EXISTS audit_logs, message_templates, reminders, payments, invoice_items, invoices, quote_items, quotes, bookings, services, customers, profiles, businesses CASCADE;
+DROP FUNCTION IF EXISTS update_updated_at_column CASCADE;
+DROP FUNCTION IF EXISTS get_current_business_id CASCADE;
+DROP FUNCTION IF EXISTS get_current_role CASCADE;
+DROP FUNCTION IF EXISTS get_current_profile_id CASCADE;
+DROP FUNCTION IF EXISTS is_super_admin CASCADE;
+DROP FUNCTION IF EXISTS is_business_owner CASCADE;
+DROP FUNCTION IF EXISTS is_staff CASCADE;
+DROP FUNCTION IF EXISTS user_has_business_access CASCADE;
+
+-- =====================================================
 -- EXTENSIONS
 -- =====================================================
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
